@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -56,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
 
         switch (position){
             case 0:
+                DrawerLayout drawerLayout=findViewById(R.id.drawer_layout);
+                drawerLayout.closeDrawers();
                 break;
             case 1:
 
@@ -67,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case 2:
                 Intent intent1 = new Intent(MainActivity.this, CallActivity.class);
-
                 intent1.putExtra("phone_no","12345");
 
                 startActivity(intent1);

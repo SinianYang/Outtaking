@@ -1,11 +1,16 @@
 package com.sjtu.outtaking;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.sql.Connection;
@@ -20,7 +25,7 @@ public class OrderActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order);
-        final TextView textview=new TextView(this);
+
         new Thread(){
 
             @Override
@@ -39,22 +44,55 @@ public class OrderActivity extends AppCompatActivity {
                     Statement stmt = conn.createStatement();
                     Intent i=getIntent();
                     String id=i.getStringExtra("UserId");
-                    String sql="select CustomerName,Restaurant,Food,CTime,Ltime from Orders where UserId="+id+";";
+                    String sql="select CustomerName,Restaurant,Food,CTime,Ltime,Address from Orders where UserId="+id+";";
 
                     final ResultSet rs = stmt.executeQuery(sql);
 
-                    rs.next();
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            ConstraintLayout   constraintLayout= (ConstraintLayout) findViewById(R.id.order);
-
+                            TableLayout tableLayout= (TableLayout) findViewById(R.id.table);
                             try {
-                                textview.setText(rs.getString("Restaurant"));
+                                while(rs.next()) {
+                                    TextView textView=new TextView(getApplication());
+                                    TextView textView2=new TextView(getApplication());
+                                    TextView textView3=new TextView(getApplication());
+                                    TextView textView4=new TextView(getApplication());
+                                    TextView textView5=new TextView(getApplication());
+                                    TextView textView6=new TextView(getApplication());
+                                    TableRow tableRow=new TableRow(getApplication());
+                                    textView.setText(rs.getString("CustomerName"));
+                                    textView.setTextColor(Color.rgb(255, 0, 0));
+                                    TextView textpra=findViewById(R.id.textView);
+                                    textView.setLayoutParams(textpra.getLayoutParams());
+                                    tableRow.addView(textView);
+                                    textView2.setText(rs.getString("Restaurant"));
+                                    textView2.setTextColor(Color.rgb(255, 0, 0));
+                                    textView2.setLayoutParams(textpra.getLayoutParams());
+                                    tableRow.addView(textView2);
+                                    textView3.setText(rs.getString("Food"));
+                                    textView3.setTextColor(Color.rgb(255, 0, 0));
+                                    textView3.setLayoutParams(textpra.getLayoutParams());
+                                    tableRow.addView(textView3);
+                                    textView4.setText(rs.getTime("CTime").toString());
+                                    textView4.setTextColor(Color.rgb(255, 0, 0));
+                                    textView4.setLayoutParams(textpra.getLayoutParams());
+                                    tableRow.addView(textView4);
+                                    textView5.setText(rs.getTime("LTime").toString());
+                                    textView5.setTextColor(Color.rgb(255, 0, 0));
+                                    textView5.setLayoutParams(textpra.getLayoutParams());
+                                    tableRow.addView(textView5);
+                                    textView6.setText(rs.getString("Address"));
+                                    textView6.setTextColor(Color.rgb(255, 0, 0));
+                                    textView6.setLayoutParams(textpra.getLayoutParams());
+                                    tableRow.addView(textView6);
+                                    tableLayout.addView(tableRow);
+                                }
                             } catch (SQLException e) {
                                 e.printStackTrace();
                             }
-                            constraintLayout.addView(textview);
+
                         }
                     });
 

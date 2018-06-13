@@ -124,8 +124,6 @@ public class LoginActivity extends AppCompatActivity {
 
                                 });
 
-                                //error.setVisibility(error.VISIBLE);
-
                             }
 
                             System.out.print("Wrong2\n");
