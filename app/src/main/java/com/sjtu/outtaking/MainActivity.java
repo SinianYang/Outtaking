@@ -21,8 +21,11 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -96,7 +99,26 @@ public class MainActivity extends AppCompatActivity {
         ListView listView=(ListView)findViewById(R.id.left_drawer);
         String[] mMenuTitles=getResources().getStringArray(R.array.menu_drawer_list);
 
+        final EditText myEditText_site = (EditText) findViewById(R.id.editText_site);
+        Button button_site = (Button) findViewById(R.id.button_sitesearch);
+        button_site.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final String site_str = myEditText_site.getText().toString();
+                System.out.print(site_str);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AddressToLatitudeLongitude at = new AddressToLatitudeLongitude(site_str);
+                        System.out.print(site_str);
+                        at.getLatAndLngByAddress();
+                        getLocationByLL(at.getLatitude(), at.getLongitude());
+                    }
+                }).start();
 
+
+            }
+        });
         try{
             ArrayAdapter<String> arrayAdapter=new ArrayAdapter<>(this,R.layout.drawer_list_item,mMenuTitles);
             listView.setAdapter(arrayAdapter);
@@ -113,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         // 按照经纬度确定地图位置
         if (ifFrist) {
             LatLng ll = new LatLng(location.getLatitude(),
-                    location.getLongitude());
+                    -location.getLongitude());
             MapStatusUpdate update = MapStatusUpdateFactory.newLatLng(ll);
             // 移动到某经纬度
             baiduMap.animateMapStatus(update);
@@ -126,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         // 显示个人位置图标
         MyLocationData.Builder builder = new MyLocationData.Builder();
         builder.latitude(location.getLatitude());
-        builder.longitude(location.getLongitude());
+        builder.longitude(-location.getLongitude());
         MyLocationData data = builder.build();
         baiduMap.setMyLocationData(data);
     }
@@ -228,5 +250,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void getLocationByLL(double la, double lg)
+    {
+        //地理坐标的数据结构
+        LatLng latLng = new LatLng(la, lg);
+        MapStatusUpdate update = MapStatusUpdateFactory.newLatLng(latLng);
+        baiduMap.animateMapStatus(update);
+        update = MapStatusUpdateFactory.zoomBy(5f);
+        // 放大
+        baiduMap.animateMapStatus(update);
+
+        ifFrist = false;
     }
 }
