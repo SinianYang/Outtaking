@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/main"
         android:layout_width="match_parent"
@@ -16,47 +15,57 @@
             android:layout_height="wrap_content"
             android:theme="@style/AppTheme.AppBarOverlay">
 
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
-                app:popupTheme="@style/AppTheme.PopupOverlay" />
+
 
         </android.support.design.widget.AppBarLayout>
 
         <include layout="@layout/content_main" />
-
-
-
 
         <com.baidu.mapapi.map.MapView
             android:id="@+id/bmapView"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:clickable="true" />
+
         <LinearLayout
-            android:id="@+id/linearLayout1"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="50dp"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content">
 
             <EditText
-                android:id="@+id/editText_site"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="textPostalAddress"
-                android:text="xxxxxxx" />
+                android:id="@+id/etContent"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_weight="1"
+                android:background="#FCFCFC"
+                android:hint="输入地址"
+                android:lines="1"
+                android:padding="10dp" />
 
             <Button
-                android:id="@+id/button_sitesearch"
-                android:layout_width="wrap_content"
+                android:id="@+id/btnSeek"
+                android:layout_width="70dp"
+                android:layout_height="55dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="20dp"
+                android:text="搜索" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right" >
+
+            <Button
+                android:id="@+id/btnLoad"
+                android:layout_width="40dp"
                 android:layout_height="wrap_content"
-
-                android:hint="前往" />
-
+                android:layout_marginTop="420dp"
+                android:layout_marginRight="5dp"
+                android:ems="3"
+                android:text="导      入      订      单" />
         </LinearLayout>
     </android.support.design.widget.CoordinatorLayout>
     <ListView android:id="@+id/left_drawer"
@@ -67,7 +76,6 @@
         android:divider="@android:color/transparent"
         android:dividerHeight="0dp"
         android:background="#111"/>
-
 
 
 </android.support.v4.widget.DrawerLayout>

@@ -7,11 +7,10 @@
         <item>导航</item>
         <item>订单</item>
         <item>拨号</item>
-        <item>设置</item>
+        <item>路程</item>
         <item>退出</item>
     </string-array>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
-
