@@ -43,7 +43,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        error.setText("Make sure you have filled all fields");
+                                        error.setText("请完整填写信息");
                                         error.setVisibility(View.VISIBLE);
                                     }
                                 });
@@ -53,7 +53,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        error.setText("Make sure you have filled all fields");
+                                        error.setText("请完整填写信息");
                                         error.setVisibility(View.VISIBLE);
                                     }
                                 });
@@ -63,7 +63,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        error.setText("Make sure you have filled all fields");
+                                        error.setText("请完整填写信息");
                                         error.setVisibility(View.VISIBLE);
                                     }
                                 });
@@ -73,18 +73,21 @@ public class RegisterActivity extends AppCompatActivity {
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        error.setText("Make sure you have filled all fields");
+                                        error.setText("请完整填写信息");
                                         error.setVisibility(View.VISIBLE);
                                     }
                                 });
                             }
-                            System.out.print(username.getText().toString() + "\n");
-                            System.out.print(userpwd.getText().toString() + "\n");
-                            System.out.print(userphone.getText().toString() + "\n");
-                            System.out.print(useremail.getText().toString() + "\n");
 
                             if(flag) {
                                 //注册驱动
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        error.setText("注册中...");
+                                        error.setVisibility(error.VISIBLE);
+                                    }
+                                });
                                 Class.forName("com.mysql.jdbc.Driver");
                                 String url = "jdbc:mysql://45.32.58.255:3306/Outtaking";
                                 Connection conn = DriverManager.getConnection(url, "root", "123456");
@@ -97,7 +100,6 @@ public class RegisterActivity extends AppCompatActivity {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            error.setText("This username has been used");
                                             error.setVisibility(error.INVISIBLE);
                                             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                                             startActivity(intent);
@@ -107,6 +109,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            error.setText("该用户名已被占用");
                                             error.setVisibility(error.VISIBLE);
                                         }
                                     });

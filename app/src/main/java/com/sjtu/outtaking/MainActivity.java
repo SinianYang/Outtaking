@@ -19,6 +19,7 @@
     import android.widget.Button;
     import android.widget.EditText;
     import android.widget.ListView;
+    import android.widget.TextView;
 
     import com.baidu.location.LocationClient;
     import com.baidu.location.LocationClientOption;
@@ -33,11 +34,14 @@
     import com.baidu.mapapi.map.MarkerOptions;
     import com.baidu.mapapi.model.LatLng;
 
+    import java.io.FileNotFoundException;
     import java.sql.Connection;
     import java.sql.DriverManager;
     import java.sql.ResultSet;
     import java.sql.SQLException;
     import java.sql.Statement;
+    import java.util.Vector;
+    import java.util.logging.Logger;
 
 
     public class MainActivity extends AppCompatActivity {
@@ -48,6 +52,11 @@
         Marker mMarker;
         Marker myLocationMarker;
         MyLocationListener myListener;
+        LatLng curLocation;
+        int[] resulttour;
+        int curOrderIndex = 1;
+        Vector<String> OrderPhones;
+        Vector<String> OrderAddresses;
 
         //为了不每次获取当前位置的时候都创建标记，将标记设置为成员变量
         private class DrawerItemClickListener implements ListView.OnItemClickListener {
@@ -92,50 +101,6 @@
                 }
             });
 
-            Button btnLoad =findViewById(R.id.btnLoad);
-            btnLoad.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    new Thread(){
-                        @Override
-
-                        public void run() {
-                            try{
-                                Class.forName("com.mysql.jdbc.Driver");
-
-                                String url = "jdbc:mysql://45.32.58.255:3306/Outtaking";
-
-                                Connection conn = DriverManager.getConnection(url,"root","123456");
-
-                                Statement stmt = conn.createStatement();
-                                Intent i=getIntent();
-                                String id=i.getStringExtra("ID");
-                                String sql="select Address from Orders where UserId="+id+";";
-                                System.out.print(id);
-                                final ResultSet rs = stmt.executeQuery(sql);
-                                while(rs.next()){
-                                    String address=rs.getString("Address");
-                                    AddressToLatitudeLongitude at = new AddressToLatitudeLongitude(address);
-                                    at.getLatAndLngByAddress();
-                                    Mark(at.getLatitude(),at.getLongitude());
-                                }
-
-
-                            }catch(ClassNotFoundException e){
-
-                                Log.v("final","fail to connect"+" "+e.getMessage());
-
-                            }catch(SQLException e){
-
-                                Log.v("final","fail to connect"+" "+e.getMessage());
-
-                            }
-                        }
-
-                    }.start();
-                }
-            });
-
             myListener =  new MyLocationListener(mMap, myLocationMarker);
 
             //注册定位客户端，并且注册定位监听器
@@ -152,6 +117,107 @@
             options.setScanSpan(1000);
             mLocationClient.setLocOption(options);
             mLocationClient.start();//注意这里 要用到 start而不是mLocationClient.requestLocation()
+
+            Button btnLoad =findViewById(R.id.btnLoad);
+            final TextView error = findViewById(R.id.error);
+            btnLoad.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    new Thread(){
+                        @Override
+                        public void run() {
+                            try{
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        error.setVisibility(error.INVISIBLE);
+                                    }
+                                });
+                                Class.forName("com.mysql.jdbc.Driver");
+                                String url = "jdbc:mysql://45.32.58.255:3306/Outtaking";
+                                Connection conn = DriverManager.getConnection(url,"root","123456");
+                                Statement stmt = conn.createStatement();
+                                Intent i=getIntent();
+                                String id=i.getStringExtra("ID");
+                                String sql="select Address,Phone from Orders where UserId="+id+";";
+                                ResultSet rs = stmt.executeQuery(sql);
+                                Vector<String> addresses=new Vector<>();
+                                String ll1=new String();
+                                String ll2=new String();
+                                int count=0;
+                                getCurLocation();
+                                ll1+=curLocation.latitude+","+curLocation.longitude+"|";
+                                OrderPhones = new Vector<>();
+                                OrderAddresses = new Vector<>();
+                                while(rs.next()){
+                                    OrderPhones.add(rs.getString("Phone"));
+                                    OrderAddresses.add(rs.getString("Address"));
+                                    count++;
+                                    String address=rs.getString("Address");
+                                    addresses.add(address);
+                                    AddressToLatitudeLongitude at = new AddressToLatitudeLongitude(address);
+                                    at.getLatAndLngByAddress();
+                                    if(count<=4)
+                                        ll1+=at.getLatitude()+","+at.getLongitude()+"|";
+                                    else
+                                        ll2+=at.getLatitude()+","+at.getLongitude()+"|";
+                                    Mark(at.getLatitude(),at.getLongitude());
+                                }
+                                ll1=ll1.substring(0,ll1.length()-1);
+                                if(!ll2.isEmpty())
+                                    ll2 =ll2.substring(0,ll2.length()-1);
+                                Log.d("LL1",ll1);
+                                Log.d("LL2",ll2);
+                                CalculateDistanceMatrix calculateDistanceMatrix=new CalculateDistanceMatrix();
+                                calculateDistanceMatrix.getMatrix(addresses,ll1,ll2);
+                                int[][] matrix = calculateDistanceMatrix.getMatrix();
+                                ACO aco = new ACO();
+                                aco.init(matrix, 1000);
+                                aco.run(200);
+                                aco.ReportResult();
+                                resulttour = aco.resulttour;
+
+                                for(int k = 0; k < OrderPhones.size(); k++){
+                                    System.out.println(OrderPhones.get(k));
+                                    System.out.println(OrderAddresses.get(k));
+                                }
+                                stmt.close();
+                                rs.close();
+                                conn.close();
+                            }catch(ClassNotFoundException e){
+                                Log.v("final","fail to connect"+" "+e.getMessage());
+                            }catch(SQLException e){
+                                Log.v("final","fail to connect"+" "+e.getMessage());
+                            }
+                        }
+
+                    }.start();
+                }
+            });
+
+            Button btnNext = findViewById(R.id.btnNext);
+            btnNext.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View view) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(OrderAddresses == null || OrderAddresses.size() == 0 || resulttour == null){
+                                error.setText("请先导入订单");
+                                error.setVisibility(error.VISIBLE);
+                            }else{
+                                if(curOrderIndex < resulttour.length - 2){
+                                    curOrderIndex++;
+                                    error.setVisibility(error.INVISIBLE);
+                                }else{
+                                    error.setText("没有更多订单");
+                                    error.setVisibility(error.VISIBLE);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
         }
 
         public void Mark(double la, double lg)
@@ -167,6 +233,11 @@
             //第一次的时候，通过强制类型转换将mMap.addOverlay(options) 变成Marker，因为它返回的其实是Overlay的
             //Overlay和Marker的父类，所以要强制类型转换
             Marker marker =(Marker)mMap.addOverlay(options);
+        }
+
+        public void getCurLocation(){
+            curLocation = myListener.getCurLocation();
+            System.out.println("CurLocation: " + curLocation);
         }
 
         public void clearMark(){
@@ -213,7 +284,13 @@
                     break;
                 case 2:
                     Intent intent1 = new Intent(MainActivity.this, CallActivity.class);
-                    intent1.putExtra("phone_no","17621779638");
+                    String phone_no;
+                    if(OrderPhones == null){
+                        phone_no = "";
+                    }else {
+                        phone_no = OrderPhones.get(resulttour[curOrderIndex] - 1);
+                    }
+                    intent1.putExtra("phone_no",phone_no);
                     startActivity(intent1);
                     break;
                 case 3:
@@ -222,8 +299,17 @@
                     break;
                 case 4:
                     Intent intent4 = new Intent();
-                    intent4.setData(Uri.parse("baidumap://map/navi?query=故宫"));
+                    String dh_address;
+                    if(OrderAddresses == null){
+                        dh_address = "上海交通大学闵行校区菁菁堂";
+                    }
+                    else{
+                        dh_address = OrderAddresses.get(resulttour[curOrderIndex] - 1);
+                    }
+                    System.out.println("导航地址: " + dh_address);
+                    intent4.setData(Uri.parse("baidumap://map/navi?query="+dh_address));
                     startActivity(intent4);
+                    break;
                 case 5:
                     System.exit(0);
                     break;

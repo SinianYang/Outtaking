@@ -42,12 +42,20 @@ public class LoginActivity extends AppCompatActivity {
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
+                                        error.setText("用户名或密码错误");
                                         error.setVisibility(error.VISIBLE);
                                     }
                                 });
                             }
                             if(flag) {
                                 //注册驱动
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        error.setText("登录中...");
+                                        error.setVisibility(error.VISIBLE);
+                                    }
+                                });
                                 Class.forName("com.mysql.jdbc.Driver");
                                 String url = "jdbc:mysql://45.32.58.255:3306/Outtaking";
                                 Connection conn = DriverManager.getConnection(url, "root", "123456");
@@ -70,12 +78,12 @@ public class LoginActivity extends AppCompatActivity {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
+                                            error.setText("用户名或密码错误");
                                             error.setVisibility(error.VISIBLE);
                                         }
                                     });
                                     //error.setVisibility(error.VISIBLE);
                                 }
-                                System.out.print("Wrong2\n");
                                 rs.close();
                                 stmt.close();
                                 conn.close();

@@ -29,7 +29,7 @@ public class AddressToLatitudeLongitude {
      *根据地址得到地理坐标
      */
     public int getLatAndLngByAddress() {
-        String addr = "";
+        String addr = "上海";
         String lat = "";
         String lng = "";
         try {

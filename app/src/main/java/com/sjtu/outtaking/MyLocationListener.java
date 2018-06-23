@@ -23,6 +23,7 @@ public class MyLocationListener extends BDAbstractLocationListener {
     private BaiduMap mMap;
     private Marker mMarker;
     private boolean isFirst = true;
+    private LatLng curLocation;
 
     public MyLocationListener(BaiduMap mMap, Marker mMarker){
         this.mMap = mMap;
@@ -35,6 +36,7 @@ public class MyLocationListener extends BDAbstractLocationListener {
         //注意 这个 LatLng，它用与设置 标记的位置和 Map的中心点的位置 。
 
         LatLng latLng = new LatLng(bdLocation.getLatitude(),bdLocation.getLongitude());
+        setCurLocation(latLng);
 
         if(mMarker == null) {
             MarkerOptions options = new MarkerOptions();
@@ -58,5 +60,13 @@ public class MyLocationListener extends BDAbstractLocationListener {
             mMap.setMapStatus(MapStatusUpdateFactory.newMapStatus(new MapStatus.Builder().zoom(18).build()));
             isFirst = false;
         }
+    }
+
+    public LatLng getCurLocation(){
+        return this.curLocation;
+    }
+
+    public void setCurLocation(LatLng curLocation){
+        this.curLocation = curLocation;
     }
 }

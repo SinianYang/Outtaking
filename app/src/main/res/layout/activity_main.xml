@@ -67,6 +67,33 @@
                 android:ems="3"
                 android:text="导      入      订      单" />
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            >
+            <Button
+                android:id="@+id/btnNext"
+                android:layout_width="100dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="260dp"
+                android:text="下一单" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/error"
+            android:visibility="invisible"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="请先导入订单"
+            android:textAlignment="center"
+            android:textColor="@android:color/holo_red_light"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="50dp"
+            android:layout_gravity="bottom"/>
+
     </android.support.design.widget.CoordinatorLayout>
     <ListView android:id="@+id/left_drawer"
         android:layout_width="240dp"

@@ -4,10 +4,11 @@
     <string name="title_activity_register">RegisterActivity</string>
 
     <string-array name="menu_drawer_list">
-        <item>导航</item>
+        <item>地图</item>
         <item>订单</item>
         <item>拨号</item>
         <item>路程</item>
+        <item>导航</item>
         <item>退出</item>
     </string-array>
 
