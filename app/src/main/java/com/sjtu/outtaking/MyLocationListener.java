@@ -69,4 +69,8 @@ public class MyLocationListener extends BDAbstractLocationListener {
     public void setCurLocation(LatLng curLocation){
         this.curLocation = curLocation;
     }
+
+    public void setmMarker(){
+        this.mMarker = null;
+    }
 }

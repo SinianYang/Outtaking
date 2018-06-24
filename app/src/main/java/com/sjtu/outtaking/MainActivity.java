@@ -1,12 +1,15 @@
     package com.sjtu.outtaking;
 
     import android.Manifest;
+    import android.content.Context;
+    import android.content.DialogInterface;
     import android.content.Intent;
     import android.content.pm.PackageManager;
     import android.net.Uri;
     import android.os.Bundle;
     import android.os.Environment;
     import android.support.v4.widget.DrawerLayout;
+    import android.support.v7.app.AlertDialog;
     import android.support.v7.app.AppCompatActivity;
     import android.support.v7.widget.Toolbar;
     import android.util.Log;
@@ -32,6 +35,7 @@
     import com.baidu.mapapi.map.MapView;
     import com.baidu.mapapi.map.Marker;
     import com.baidu.mapapi.map.MarkerOptions;
+    import com.baidu.mapapi.map.OverlayOptions;
     import com.baidu.mapapi.model.LatLng;
 
     import java.io.FileNotFoundException;
@@ -40,6 +44,8 @@
     import java.sql.ResultSet;
     import java.sql.SQLException;
     import java.sql.Statement;
+    import java.util.ArrayList;
+    import java.util.List;
     import java.util.Vector;
     import java.util.logging.Logger;
 
@@ -57,6 +63,12 @@
         int curOrderIndex = 1;
         Vector<String> OrderPhones;
         Vector<String> OrderAddresses;
+        String ll1,ll2;
+        Vector<String> addresses;
+        List<LatLng> trace=new ArrayList<>();
+        boolean isFirstRoute = true;
+        boolean isPhoned = false;
+        int[] color={0xAAFF0000,0xAA00FF00,0xAA0000FF,0xAAFFFF00,0xAA00FFFF,0xAA800080,0xAAFFA500,0xAAFFB6C1,0xAA2F4F4F,0xAA808080,0xAA800000};
 
         //为了不每次获取当前位置的时候都创建标记，将标记设置为成员变量
         private class DrawerItemClickListener implements ListView.OnItemClickListener {
@@ -119,7 +131,6 @@
             mLocationClient.start();//注意这里 要用到 start而不是mLocationClient.requestLocation()
 
             Button btnLoad =findViewById(R.id.btnLoad);
-            final TextView error = findViewById(R.id.error);
             btnLoad.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -130,9 +141,11 @@
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        error.setVisibility(error.INVISIBLE);
+                                        showExitDialog04();
                                     }
                                 });
+                                mMap.clear();
+                                myListener.setmMarker();
                                 Class.forName("com.mysql.jdbc.Driver");
                                 String url = "jdbc:mysql://45.32.58.255:3306/Outtaking";
                                 Connection conn = DriverManager.getConnection(url,"root","123456");
@@ -141,12 +154,13 @@
                                 String id=i.getStringExtra("ID");
                                 String sql="select Address,Phone from Orders where UserId="+id+";";
                                 ResultSet rs = stmt.executeQuery(sql);
-                                Vector<String> addresses=new Vector<>();
-                                String ll1=new String();
-                                String ll2=new String();
+                                addresses=new Vector<>();
+                                ll1=new String();
+                                ll2=new String();
                                 int count=0;
                                 getCurLocation();
                                 ll1+=curLocation.latitude+","+curLocation.longitude+"|";
+                                trace.add(curLocation);
                                 OrderPhones = new Vector<>();
                                 OrderAddresses = new Vector<>();
                                 while(rs.next()){
@@ -161,26 +175,26 @@
                                         ll1+=at.getLatitude()+","+at.getLongitude()+"|";
                                     else
                                         ll2+=at.getLatitude()+","+at.getLongitude()+"|";
+                                    trace.add(new LatLng(at.getLatitude(),at.getLongitude()));
                                     Mark(at.getLatitude(),at.getLongitude());
                                 }
-                                ll1=ll1.substring(0,ll1.length()-1);
-                                if(!ll2.isEmpty())
-                                    ll2 =ll2.substring(0,ll2.length()-1);
-                                Log.d("LL1",ll1);
-                                Log.d("LL2",ll2);
-                                CalculateDistanceMatrix calculateDistanceMatrix=new CalculateDistanceMatrix();
-                                calculateDistanceMatrix.getMatrix(addresses,ll1,ll2);
-                                int[][] matrix = calculateDistanceMatrix.getMatrix();
-                                ACO aco = new ACO();
-                                aco.init(matrix, 1000);
-                                aco.run(200);
-                                aco.ReportResult();
-                                resulttour = aco.resulttour;
 
                                 for(int k = 0; k < OrderPhones.size(); k++){
                                     System.out.println(OrderPhones.get(k));
                                     System.out.println(OrderAddresses.get(k));
                                 }
+
+                                ll1=ll1.substring(0,ll1.length()-1);
+                                if(!ll2.isEmpty())
+                                    ll2 =ll2.substring(0,ll2.length()-1);
+                                System.out.println("LL1: "+ll1);
+                                System.out.println("LL2: "+ll2);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showExitDialog05();
+                                    }
+                                });
                                 stmt.close();
                                 rs.close();
                                 conn.close();
@@ -195,6 +209,125 @@
                 }
             });
 
+            final TextView curAdd = findViewById(R.id.curAddress);
+            Button btnDraw = findViewById(R.id.btnDraw);
+            btnDraw.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    new Thread(){
+                        @Override
+                        public void run(){
+                            curOrderIndex = 1;
+                            if(OrderAddresses == null || OrderAddresses.size() == 0){
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showExitDialog02();
+                                    }
+                                });
+                            }else {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showExitDialog06();
+                                    }
+                                });
+                                mMap.clear();
+                                myListener.setmMarker();
+                                for(int idx = 1; idx < trace.size(); idx ++){
+                                    Mark(trace.get(idx).latitude,trace.get(idx).longitude);
+                                    System.out.println("RouteLat: "+trace.get(idx).latitude + " " + "RouteLon: "+trace.get(idx).longitude);
+                                }
+                                CalculateDistanceMatrix calculateDistanceMatrix = new CalculateDistanceMatrix();
+                                calculateDistanceMatrix.getMatrix(addresses, ll1, ll2);
+                                int[][] matrix = calculateDistanceMatrix.getMatrix();
+                                ACO aco = new ACO();
+                                aco.init(matrix, 100);
+                                aco.run(100);
+                                aco.ReportResult();
+                                resulttour = aco.resulttour;
+
+                                RidingRoute route = new RidingRoute();
+                                route.setAddress(trace);
+                                System.out.println(trace);
+                                route.setOrder(resulttour);
+                                for (int i = 0; i < resulttour.length; i++)
+                                    System.out.println(resulttour[i]);
+                                route.PlanRoute();
+                                List<OverlayOptions> lines = route.getLines();
+                                for (OverlayOptions line : lines) {
+                                    com.baidu.mapapi.map.Overlay overlay = mMap.addOverlay(line);
+                                }
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showExitDialog01();
+                                    }
+                                });
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        curAdd.setTextColor(color[0]);
+                                        curAdd.setText("当前订单地址：" + OrderAddresses.get(resulttour[curOrderIndex] - 1));
+                                    }
+                                });
+                            }
+                        }
+                    }.start();
+
+                    new Thread() {
+                        @Override
+                        public void run(){
+                            int seconds = 0;
+                            System.out.println("Start Running new Thread");
+                            if(OrderAddresses != null && OrderAddresses.size() != 0) {
+                                System.out.println("Size: "+OrderAddresses.size());
+                                for(int i = 1; i < trace.size(); i++) {
+                                    for (; ; ) {
+                                        try {
+                                            Thread.sleep(1000);
+                                        } catch (InterruptedException e) {
+                                            // TODO Auto-generated catch block
+                                            e.printStackTrace();
+                                        }
+                                        seconds++;
+                                        getCurLocation();
+                                        double latNow = curLocation.latitude;
+                                        double lonNow = curLocation.longitude;
+
+                                        double latEnd;
+                                        double lonEnd;
+
+                                        latEnd = trace.get(i).latitude;
+                                        lonEnd = trace.get(i).longitude;
+                                        System.out.println("LatEnd: " + latEnd);
+                                        System.out.println("LonEnd: " + lonEnd);
+
+                                        if (seconds % 60 == 0) {
+                                            CalculateDistance calculateDistance = new CalculateDistance(latNow,lonNow,latEnd,lonEnd);
+                                            int distance = calculateDistance.getDistance();
+                                            System.out.println("Distance: "+distance);
+                                            if(distance < 100) {
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        showMessagebox();
+                                                    }
+                                                });
+                                            }
+                                            if(isPhoned){
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }.start();
+
+                }
+            });
+
             Button btnNext = findViewById(R.id.btnNext);
             btnNext.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -202,22 +335,116 @@
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if(OrderAddresses == null || OrderAddresses.size() == 0 || resulttour == null){
-                                error.setText("请先导入订单");
-                                error.setVisibility(error.VISIBLE);
+                            if(OrderAddresses == null || OrderAddresses.size() == 0){
+                                showExitDialog02();
+                            }else if(resulttour == null || resulttour.length == 0){
+                                showExitDialog07();
                             }else{
                                 if(curOrderIndex < resulttour.length - 2){
                                     curOrderIndex++;
-                                    error.setVisibility(error.INVISIBLE);
+                                    curAdd.setTextColor(color[curOrderIndex-1]);
+                                    curAdd.setText("当前订单地址："+OrderAddresses.get(resulttour[curOrderIndex] - 1));
                                 }else{
-                                    error.setText("没有更多订单");
-                                    error.setVisibility(error.VISIBLE);
+                                    showExitDialog03();
                                 }
                             }
                         }
                     });
                 }
             });
+
+            Button btnR=findViewById(R.id.btnReturn);
+            btnR.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void  onClick(View view){
+
+                    getCurLocation();
+                    MapStatusUpdate msu = MapStatusUpdateFactory.newLatLng(curLocation);
+                    mMap.setMapStatus(msu);
+                }
+            });
+        }
+
+        private DialogInterface.OnClickListener clickCall=new DialogInterface.OnClickListener()
+
+        {
+            @Override
+            public void onClick(DialogInterface arg0,int arg1)
+            {
+                isPhoned = true;
+                String num = OrderPhones.get(resulttour[curOrderIndex] - 1);
+                Intent intent1 = new Intent(MainActivity.this, CallActivity.class);
+                intent1.putExtra("phone_no",num);
+                startActivity(intent1);
+            }
+
+        };
+
+
+        private void showMessagebox()
+        {
+            new AlertDialog.Builder(this)
+                    .setTitle("")
+                    .setMessage("已接近目的地，是否拨打客户号码")
+                    .setPositiveButton("确定", clickCall)
+                    .setNegativeButton("取消",null)
+                    .show();
+        }
+
+        private void showExitDialog01(){
+            new AlertDialog.Builder(this)
+                    .setTitle("")
+                    .setMessage("完成路线规划")
+                    .setPositiveButton("确定", null)
+                    .show();
+        }
+
+        private void showExitDialog02(){
+            new AlertDialog.Builder(this)
+                    .setTitle("")
+                    .setMessage("请先导入订单")
+                    .setPositiveButton("确定", null)
+                    .show();
+        }
+
+        private void showExitDialog03(){
+            new AlertDialog.Builder(this)
+                    .setTitle("")
+                    .setMessage("没有更多订单")
+                    .setPositiveButton("确定", null)
+                    .show();
+        }
+
+        private void showExitDialog04(){
+            new AlertDialog.Builder(this)
+                    .setTitle("")
+                    .setMessage("正在导入订单")
+                    .setPositiveButton("确定",null)
+                    .show();
+        }
+
+        private void showExitDialog05(){
+            new AlertDialog.Builder(this)
+                    .setTitle("")
+                    .setMessage("订单导入成功")
+                    .setPositiveButton("确定",null)
+                    .show();
+        }
+
+        private void showExitDialog06(){
+            new AlertDialog.Builder(this)
+                    .setTitle("")
+                    .setMessage("开始路线规划")
+                    .setPositiveButton("确定",null)
+                    .show();
+        }
+
+        private void showExitDialog07(){
+            new AlertDialog.Builder(this)
+                    .setTitle("")
+                    .setMessage("请先规划路线")
+                    .setPositiveButton("确定", null)
+                    .show();
         }
 
         public void Mark(double la, double lg)
@@ -285,7 +512,7 @@
                 case 2:
                     Intent intent1 = new Intent(MainActivity.this, CallActivity.class);
                     String phone_no;
-                    if(OrderPhones == null){
+                    if(OrderPhones == null || resulttour == null){
                         phone_no = "";
                     }else {
                         phone_no = OrderPhones.get(resulttour[curOrderIndex] - 1);

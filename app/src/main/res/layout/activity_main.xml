@@ -53,6 +53,7 @@
                 android:text="搜索" />
 
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -81,18 +82,48 @@
                 android:text="下一单" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/error"
-            android:visibility="invisible"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:text="请先导入订单"
-            android:textAlignment="center"
-            android:textColor="@android:color/holo_red_light"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="50dp"
-            android:layout_gravity="bottom"/>
+            android:layout_height="wrap_content"
+            android:gravity="right" >
+
+            <Button
+                android:id="@+id/btnDraw"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="320dp"
+                android:layout_marginRight="5dp"
+                android:ems="3"
+                android:text="路      线      规      划" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right" >
+
+            <Button
+                android:id="@+id/btnReturn"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="220dp"
+                android:layout_marginRight="5dp"
+                android:ems="3"
+                android:text="回      到      当      前" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="85dp"
+                android:id="@+id/curAddress"
+                android:textSize="16dp"
+                android:text=""/>
+        </LinearLayout>
 
     </android.support.design.widget.CoordinatorLayout>
     <ListView android:id="@+id/left_drawer"

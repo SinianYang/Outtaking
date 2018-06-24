@@ -100,9 +100,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            error.setVisibility(error.INVISIBLE);
-                                            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                                            startActivity(intent);
+                                            showMessagebox();
                                         }
                                     });
                                 } else {
@@ -136,7 +134,7 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    public void showMessagebox(View view)
+    private void showMessagebox()
     {
         new AlertDialog.Builder(this)
                 .setTitle("")
